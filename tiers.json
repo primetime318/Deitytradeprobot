@@ -1,0 +1,17 @@
+{
+  "DEFAULT_GROUP_ID": -1002715449952,
+  "tiers": {
+    "free":      { "wallet_limit": 10,  "chains": ["eth"],               "min_usd_buy": 50000, "delay_seconds": 1800 },
+    "standard":  { "wallet_limit": 25,  "chains": ["eth"],               "min_usd_buy": 25000, "delay_seconds": 900 },
+    "alpha":     { "wallet_limit": 75,  "chains": ["eth","btc","xrp"],   "min_usd_buy": 10000, "delay_seconds": 60 },
+    "godmode":   { "wallet_limit": 200, "chains": ["eth","btc","xrp"],   "min_usd_buy": 0,     "delay_seconds": 0 }
+  },
+  "users": {
+    "6860530316": "godmode"
+  },
+  "groups": {
+    "-1002715449952": "godmode",
+    "-1001234567890": "alpha",
+    "-1009876543210": "free"
+  }
+}

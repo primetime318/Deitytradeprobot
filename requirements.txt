@@ -1,0 +1,12 @@
+pyTelegramBotAPI
+flask
+pytz
+schedule
+apscheduler
+replit
+aiogram
+aiohttp
+httpx
+requests
+django-routers
+binpan
