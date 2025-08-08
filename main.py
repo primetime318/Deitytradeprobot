@@ -3,6 +3,8 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
+import os
+os.system("bash push_to_github.sh main 'TEST PUSH FROM CHATGPT'")
 
 from config import BOT_TOKEN
 from commands.command_router import router as command_router
