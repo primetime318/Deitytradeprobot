@@ -1,60 +1,56 @@
 # utils/tier.py
+from __future__ import annotations
+import json
 from enum import Enum
-import json, os, threading
+from pathlib import Path
+from aiogram.types import Message
 
-class Tier(str, Enum):
+TIERS_FILE = Path("data/tiers.json")
+TIERS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+class Tier(Enum):
     FREE = "free"
     ALPHA = "alpha"
     GOD = "god"
 
-# Admins can be set via env: ADMIN_IDS="123,456"
-ADMIN_IDS = {
-    int(x) for x in os.getenv("ADMIN_IDS", "6860530316").split(",")
-    if x.strip().isdigit()
-}
+def _load() -> dict[str, str]:
+    if TIERS_FILE.exists():
+        try:
+            return json.loads(TIERS_FILE.read_text())
+        except Exception:
+            return {}
+    return {}
 
-def is_admin(message) -> bool:
-    u = getattr(message, "from_user", None)
-    return bool(u and u.id in ADMIN_IDS)
-
-DEFAULT_TIER = Tier.FREE
-
-STORE_PATH = os.getenv("TIER_STORE_PATH", "data/tiers.json")
-_lock = threading.Lock()
-
-def _load_map() -> dict[int, Tier]:
-    try:
-        with open(STORE_PATH, "r") as f:
-            raw = json.load(f)
-        return {int(k): Tier(v) for k, v in raw.items()}
-    except FileNotFoundError:
-        return {}
-    except Exception:
-        return {}
-
-def _save_map(mapping: dict[int, Tier]) -> None:
-    os.makedirs(os.path.dirname(STORE_PATH), exist_ok=True)
-    with open(STORE_PATH, "w") as f:
-        json.dump({str(k): v.value for k, v in mapping.items()}, f)
-
-_TIER_MAP: dict[int, Tier] = _load_map()
-
-def list_tiers() -> dict[int, str]:
-    return {uid: t.value for uid, t in _TIER_MAP.items()}
+def _save(d: dict[str, str]) -> None:
+    TIERS_FILE.write_text(json.dumps(d, indent=2))
 
 def get_tier(user_id: int) -> Tier:
-    return _TIER_MAP.get(user_id, DEFAULT_TIER)
+    data = _load()
+    name = data.get(str(user_id), "free")
+    try:
+        return Tier(name)
+    except Exception:
+        return Tier.FREE
 
 def set_tier(user_id: int, tier: Tier) -> None:
-    with _lock:
-        if tier == DEFAULT_TIER:
-            _TIER_MAP.pop(user_id, None)
-        else:
-            _TIER_MAP[user_id] = tier
-        _save_map(_TIER_MAP)
+    data = _load()
+    data[str(user_id)] = tier.value
+    _save(data)
 
-def _name_to_tier(name: str) -> Tier | None:
-    name = (name or "").strip().lower()
-    if name in ("free", "alpha", "god"):
-        return Tier(name)
-    return None
+def list_tiers() -> dict[int, str]:
+    return {int(k): v for k, v in _load().items()}
+
+def is_admin(message: Message) -> bool:
+    # Owner is always admin; add more IDs here if you like
+    try:
+        owner_id = int(message.bot['owner_id']) if 'owner_id' in message.bot else None
+    except Exception:
+        owner_id = None
+    uid = message.from_user.id if message.from_user else 0
+    return owner_id is not None and uid == owner_id
+
+# Helper: check if user's tier meets a minimum
+def meets(user_id: int, minimum: Tier) -> bool:
+    order = [Tier.FREE, Tier.ALPHA, Tier.GOD]
+    u = get_tier(user_id)
+    return order.index(u) >= order.index(minimum)
