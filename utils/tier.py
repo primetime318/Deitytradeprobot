@@ -1,5 +1,11 @@
 import json
 import os
+from enum import Enum
+
+class Tier(str, Enum):
+    FREE = "Free"
+    ALPHA = "Alpha"
+    GODMODE = "GodMode"
 
 TIERS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'tiers.json')
 
