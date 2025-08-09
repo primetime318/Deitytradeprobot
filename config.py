@@ -12,5 +12,9 @@ BOT = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode="HTML")
 )
-# config.py
-ADMIN_IDS = [6860530316]  # List so you can add more later if needed
+# keep single + list for compatibility
+ADMIN_ID = 6860530316
+ADMIN_IDS = [ADMIN_ID]
+
+def is_admin(user_id: int) -> bool:
+    return user_id in ADMIN_IDS
