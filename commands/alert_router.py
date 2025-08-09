@@ -2,7 +2,7 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
-from utils.tier import get_tier, 
+from utils.tier import get_tier
 
 alert_router = Router(name="alerts")
 
