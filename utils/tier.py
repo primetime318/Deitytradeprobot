@@ -1,13 +1,18 @@
-# src/utils/tier.py
-
 import json
 import os
 from typing import Dict
+from enum import Enum
 
-# tiers are stored here as: { "123456789": "Alpha", ... }
+# --- Tier Enum ---
+class Tier(str, Enum):
+    FREE = "Free"
+    ALPHA = "Alpha"
+    GODMODE = "GodMode"
+
+# Path to tiers.json
 TIERS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "tiers.json")
 
-# Your admin(s) – add more IDs if needed
+# Your admin IDs
 ADMINS = {6860530316}
 
 def _ensure_store():
@@ -30,7 +35,7 @@ def save_tiers(tiers: Dict[str, str]) -> None:
 
 def get_tier(user_id: int) -> str:
     tiers = load_tiers()
-    return tiers.get(str(user_id), "Free")
+    return tiers.get(str(user_id), Tier.FREE.value)
 
 def set_tier(user_id: int, tier: str) -> None:
     tiers = load_tiers()
@@ -38,9 +43,7 @@ def set_tier(user_id: int, tier: str) -> None:
     save_tiers(tiers)
 
 def is_admin(user_id: int) -> bool:
-    # single source of truth for admin checks
     try:
-        uid = int(user_id)
-    except Exception:
+        return int(user_id) in ADMINS
+    except:
         return False
-    return uid in ADMINS
