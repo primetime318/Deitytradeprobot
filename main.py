@@ -18,6 +18,7 @@ from router.system_router import system_router
 from commands.alert_router import alert_router
 from router.tier_router import tier_router
 from commands.debug_admin import debug_router
+from utils.tier import get_tier, Tier, is_admin, set_tier, list_tiers
 
 # Logging
 logging.basicConfig(level=logging.INFO)
