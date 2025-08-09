@@ -12,4 +12,5 @@ BOT = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode="HTML")
 )
-ADMIN_ID = 6860530316  
+# config.py
+ADMIN_IDS = [6860530316]  # List so you can add more later if needed
