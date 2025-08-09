@@ -1,74 +1,34 @@
 # utils/tier.py
-# --- admin config (explicit) ---
-ADMIN_ID = 6860530316
-ADMIN_IDS = [ADMIN_ID]
-# --------------------------------
+
 import json
-from enum import Enum
-from pathlib import Path
-from aiogram.types import Message
-# utils/tier.py
-from utils.check_admin import is_admin
-if not is_admin(message.from_user.id):
-    return await message.answer("🚫 You are not authorized to use this command.")
-def _name_to_tier(name: str):
-    """
-    Convert a tier name to its internal tier representation.
-    Example: 'godmode' -> 'GodMode', 'alpha' -> 'Alpha'
-    """
-    tiers = {
-        "free": "Free",
-        "alpha": "Alpha",
-        "godmode": "GodMode"
-    }
-    return tiers.get(name.lower())
+import os
 
-TIERS_FILE = Path("data/tiers.json")
-TIERS_FILE.parent.mkdir(parents=True, exist_ok=True)
+TIERS_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "tiers.json")
 
-class Tier(Enum):
-    FREE = "free"
-    ALPHA = "alpha"
-    GOD = "god"
+# Your Telegram user IDs that should be treated as bot admins
+ADMINS = [
+    6860530316  # <-- Your ID
+]
 
-def _load() -> dict[str, str]:
-    if TIERS_FILE.exists():
-        try:
-            return json.loads(TIERS_FILE.read_text())
-        except Exception:
-            return {}
-    return {}
+def load_tiers():
+    if not os.path.exists(TIERS_FILE):
+        return {}
+    with open(TIERS_FILE, "r") as f:
+        return json.load(f)
 
-def _save(d: dict[str, str]) -> None:
-    TIERS_FILE.write_text(json.dumps(d, indent=2))
+def save_tiers(tiers):
+    with open(TIERS_FILE, "w") as f:
+        json.dump(tiers, f, indent=4)
 
-def get_tier(user_id: int) -> Tier:
-    data = _load()
-    name = data.get(str(user_id), "free")
-    try:
-        return Tier(name)
-    except Exception:
-        return Tier.FREE
+def get_tier(user_id: int):
+    tiers = load_tiers()
+    return tiers.get(str(user_id), "Free")  # Default to Free tier
 
-def set_tier(user_id: int, tier: Tier) -> None:
-    data = _load()
-    data[str(user_id)] = tier.value
-    _save(data)
+def set_tier(user_id: int, tier: str):
+    tiers = load_tiers()
+    tiers[str(user_id)] = tier
+    save_tiers(tiers)
 
-def list_tiers() -> dict[int, str]:
-    return {int(k): v for k, v in _load().items()}
-
-def is_admin(message: Message) -> bool:
-    # Owner is always admin; add more IDs here if you like
-    try:
-        owner_id = int(message.bot['owner_id']) if 'owner_id' in message.bot else None
-    except Exception:
-        owner_id = None
-    uid = message.from_user.id if message.from_user else 0
-    return owner_id is not None and uid == owner_id
-
-# Helper: check if user's tier meets a minimum
-def meets(user_id: int, minimum: Tier) -> bool:
-    order = [Tier.FREE, Tier.ALPHA, Tier.GOD]
-    u = get_tier(user_id)
-    return order.index(u) >= order.index(minimum)
+def is_admin(user_id: int) -> bool:
+    """Check if a given user ID is an admin."""
+    return user_id in ADMINS
