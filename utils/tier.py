@@ -4,6 +4,19 @@ import json
 from enum import Enum
 from pathlib import Path
 from aiogram.types import Message
+# utils/tier.py
+
+def _name_to_tier(name: str):
+    """
+    Convert a tier name to its internal tier representation.
+    Example: 'godmode' -> 'GodMode', 'alpha' -> 'Alpha'
+    """
+    tiers = {
+        "free": "Free",
+        "alpha": "Alpha",
+        "godmode": "GodMode"
+    }
+    return tiers.get(name.lower())
 
 TIERS_FILE = Path("data/tiers.json")
 TIERS_FILE.parent.mkdir(parents=True, exist_ok=True)
