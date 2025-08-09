@@ -5,11 +5,12 @@ import os
 from enum import Enum
 from typing import Dict
 
-# ---------- Constants & paths ----------
+# ---------- Paths ----------
 DATA_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data"))
 TIERS_PATH = os.path.join(DATA_DIR, "tiers.json")
 
-# Your admin IDs (add more if needed)
+# ---------- Admins ----------
+# Add more IDs as needed
 ADMIN_IDS = {6860530316}
 
 # ---------- Tier enum (kept for compatibility) ----------
@@ -37,7 +38,7 @@ def save_tiers(tiers: Dict[str, str]) -> None:
         json.dump(tiers, f, indent=2, ensure_ascii=False)
     os.replace(tmp, TIERS_PATH)
 
-# ---------- Public API used around the bot ----------
+# ---------- Public API ----------
 def get_tier(user_id: int) -> str:
     """Return the user's tier name; defaults to 'Free'."""
     tiers = load_tiers()
