@@ -3,7 +3,6 @@
 ADMIN_ID = 6860530316
 ADMIN_IDS = [ADMIN_ID]
 # --------------------------------
-from __future__ import annotations
 import json
 from enum import Enum
 from pathlib import Path
