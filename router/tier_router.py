@@ -1,92 +1,47 @@
-# router/tier_router.py
-from aiogram import Router
+from aiogram import Router, types
 from aiogram.filters import Command
-from aiogram.types import Message
-from html import escape as quote_html  # Using Python built-in escape
+from utils.tier import get_tier, set_tier, list_tiers
 
-from utils.tier import (
-    Tier,
-    get_tier,
-    set_tier,
-    list_tiers,
-    is_admin,
-    _name_to_tier,  # internal helper is fine to reuse here
-)
+tier_router = Router()
 
-tier_router = Router(name="tier")
+# Command: /mytier
+@tier_router.message(Command("mytier"))
+async def my_tier_handler(message: types.Message):
+    tier = get_tier(message.from_user.id)
+    await message.reply(f"💎 Your current tier: **{tier}**")
 
-
-@tier_router.message(Command("tier"))
-async def cmd_tier(message: Message):
-    """Show the caller's current tier."""
-    uid = message.from_user.id if message.from_user else 0
-    t = get_tier(uid)
-    tier_text = quote_html(t.value.title())
-    await message.answer(f"🏷 Your tier: <b>{tier_text}</b>", parse_mode="HTML")
-
-
+# Command: /settier (Admin only)
 @tier_router.message(Command("settier"))
-async def cmd_settier(message: Message):
-    """
-    Admin only.
-    Usage:
-        /settier <user_id> <free|alpha|god>
-    Or reply to a user's message with:
-        /settier <free|alpha|god>
-    """
-    if not is_admin(message):
-        return await message.answer("⛔ You are not authorized to use this command.")
+async def set_tier_handler(message: types.Message):
+    if message.chat.type != "private":
+        await message.reply("⚠ Please use this command in a private chat.")
+        return
 
-    text = (message.text or "").strip()
-    parts = text.split(maxsplit=2)
+    args = message.text.split()
+    if len(args) < 3:
+        await message.reply("Usage: /settier <user_id> <tier>")
+        return
 
-    target_id = None
-    tier_name = None
+    try:
+        target_id = int(args[1])
+    except ValueError:
+        await message.reply("⚠ Invalid user ID.")
+        return
 
-    # Case 1: /settier <user_id> <tier>
-    if len(parts) == 3:
-        _, uid_str, tier_name = parts
-        if uid_str.isdigit():
-            target_id = int(uid_str)
+    new_tier = args[2]
+    set_tier(target_id, new_tier)
+    await message.reply(f"✅ Tier for user {target_id} set to **{new_tier}**.")
 
-    # Case 2: reply + /settier <tier>
-    if target_id is None and message.reply_to_message and len(parts) == 2:
-        target_id = (
-            message.reply_to_message.from_user.id
-            if message.reply_to_message.from_user
-            else None
-        )
-        tier_name = parts[1]
-
-    if target_id is None or not tier_name:
-        return await message.answer(
-            "❗ Usage: /settier <user_id> <free|alpha|god>  (or reply with /settier <tier>)"
-        )
-
-    tier = _name_to_tier(tier_name)
-    if tier is None:
-        return await message.answer("❗ Tier must be one of: free, alpha, god")
-
-    set_tier(target_id, tier)
-    tier_text = quote_html(tier.value.title())
-    await message.answer(
-        f"✅ Set tier for <code>{target_id}</code> to <b>{tier_text}</b>.",
-        parse_mode="HTML",
-    )
-
-
+# Command: /tiers (List all users & tiers) - Admin only
 @tier_router.message(Command("tiers"))
-async def cmd_tiers(message: Message):
-    """List all tier mappings (admin only)."""
-    if not is_admin(message):
-        return await message.answer("⛔ You are not authorized to use this command.")
+async def list_tiers_handler(message: types.Message):
+    tiers = list_tiers()
+    if not tiers:
+        await message.reply("No users have tiers assigned yet.")
+        return
 
-    data = list_tiers()
-    if not data:
-        return await message.answer("ℹ️ No custom tiers set yet.")
+    reply_text = "📋 **Current Tiers:**\n"
+    for user_id, tier in tiers.items():
+        reply_text += f"- {user_id}: {tier}\n"
 
-    lines = [
-        f"• <code>{uid}</code>: {quote_html(name.title())}"
-        for uid, name in sorted(data.items())
-    ]
-    await message.answer("🧾 <b>Tiers</b>\n" + "\n".join(lines), parse_mode="HTML")
+    await message.reply(reply_text)
