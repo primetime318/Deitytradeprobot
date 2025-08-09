@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import Message
-from utils.check_admin import is_admin
+from utils.tier import is_admin
 from config import ADMIN_IDS  # keep both imports to see what prod loads
 
 debug_router = Router()
