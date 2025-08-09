@@ -17,7 +17,7 @@ from commands.catchall_router import catchall_router
 from router.system_router import system_router
 from commands.alert_router import alert_router
 from router.tier_router import tier_router
-
+from commands.debug_admin import debug_router
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +36,7 @@ dp.include_router(hedge_router)
 dp.include_router(system_router)
 dp.include_router(signal_router)
 dp.include_router(tier_router)
+dp.include_router(debug_router)
 # --- NEW ROUTERS ---
 from commands.util_router import util_router
 from commands.signal_router import signal_router
@@ -43,8 +44,8 @@ from commands.catchall_router import catchall_router
 
 # --- INCLUDE NEW ROUTERS ---
 dp.include_router(util_router)       # /id, /ping
-dp.include_router(catchall_router)   # Catch-all for unknown commands (must be last)
-
+dp.include_router(catchall_router)# Catch-all for unknown commands (must be last)
+dp.include_router(debug_router)
 # Background whale monitors
 async def eth_whale_router_polling():
     from eth_whale_monitor import monitor_eth_whales
