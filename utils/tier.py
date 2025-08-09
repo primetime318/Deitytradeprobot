@@ -8,7 +8,9 @@ from enum import Enum
 from pathlib import Path
 from aiogram.types import Message
 # utils/tier.py
-
+from utils.check_admin import is_admin
+if not is_admin(message.from_user.id):
+    return await message.answer("🚫 You are not authorized to use this command.")
 def _name_to_tier(name: str):
     """
     Convert a tier name to its internal tier representation.
